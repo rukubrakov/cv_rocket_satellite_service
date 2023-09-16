@@ -5,4 +5,4 @@
 ['remote "svr"']
     url = ssh://91.206.15.25/home/n.kubrakov/dvc_files
     user = n.kubrakov
-    keyfile = /Users/nikitakubrakov/.ssh/id_ed25519
+    keyfile = ~/.ssh/id_rsa
