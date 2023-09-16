@@ -1,0 +1,4 @@
+services:
+  planet_classifier:
+    model_path: 'weights/epoch_epoch=10-val_f1=0.640.ckpt'
+    device: ${oc.env:PLANET_DEVICE,'cpu'}
