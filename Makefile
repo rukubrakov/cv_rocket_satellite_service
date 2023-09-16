@@ -4,7 +4,7 @@ DOCKER_IMAGE := n.kubrakov_planet_service
 
 DEPLOY_HOST := demo_host
 KEY_FILE := ~/.ssh/id_rsa
-DVC_REMOTE_NAME := my_remote
+DVC_REMOTE_NAME := svr
 
 .PHONY: run_app
 run_app:
