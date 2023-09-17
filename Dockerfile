@@ -13,12 +13,12 @@ RUN apt-get update && \
     libxext6
 
 
-WORKDIR /genres_service
+WORKDIR /planets_service
 
 COPY requirements.txt requirements.txt
 
-RUN pip --no-cache-dir install -r  requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip --no-cache-dir install -r  requirements.txt
 
-COPY . /genres_service/
+COPY . /planets_service/
 
 CMD make run_app
