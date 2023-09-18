@@ -5,14 +5,14 @@ from fastapi import Depends, File
 
 from source.containers.containers import AppContainer
 from source.routes.routers import router
-from source.services.planet_analysis import PlanetAnalytics
+from source.services.planet_classifier import PlanetClassifier
 
 
 @router.get('/planets')
 @inject
-def planets_list(service: PlanetAnalytics = Depends(Provide[AppContainer.planet_analytics])):
+def planets_list(service: PlanetClassifier = Depends(Provide[AppContainer.planet_classifier])):
     return {
-        'planets': service.planets,
+        'planets': service.classes,
     }
 
 
@@ -20,7 +20,7 @@ def planets_list(service: PlanetAnalytics = Depends(Provide[AppContainer.planet_
 @inject
 def predict(
     image: bytes = File(),
-    service: PlanetAnalytics = Depends(Provide[AppContainer.planet_analytics]),
+    service: PlanetClassifier = Depends(Provide[AppContainer.planet_classifier]),
 ):
     img = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)
     planets = service.predict(img)
@@ -32,7 +32,7 @@ def predict(
 @inject
 def predict_proba(
     image: bytes = File(),
-    service: PlanetAnalytics = Depends(Provide[AppContainer.planet_analytics]),
+    service: PlanetClassifier = Depends(Provide[AppContainer.planet_classifier]),
 ):
     img = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)
     return service.predict_proba(img)

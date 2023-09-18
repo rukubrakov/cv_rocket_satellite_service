@@ -27,10 +27,10 @@ pull_model:
   script:
     - make install_dvc
     - make download_weights
-  # artifacts:
-  #   paths:
-  #     - weights/*.ckpt
-  #   expire_in: 1 day
+  artifacts:
+    paths:
+      - weights/*.onnx
+    expire_in: 1 day
 
 .docker_login: &docker_login
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY

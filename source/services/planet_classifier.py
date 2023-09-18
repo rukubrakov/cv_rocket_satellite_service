@@ -1,27 +1,47 @@
 import typing as tp
 
 import numpy as np
-# import torch
+import onnxruntime as ort
 
-# from src.services.preprocess_utils import preprocess_image
+from source.services.preprocess_utils import preprocess_image
 
 
 class PlanetClassifier:
 
     def __init__(self, config: tp.Dict):
-        pass
-        # self._model_path = config['model_path']
-        # self._device = config['device']
+        self._model_path = config['model_path']
 
-        # self._model: torch.nn.Module = torch.jit.load(self._model_path, map_location=self._device)
-        # self._classes: np.ndarray = np.array(self._model.classes)
-        # self._size: tp.Tuple[int, int] = self._model.size
-        # self._thresholds: np.ndarray = np.array(self._model.thresholds)
+        self._ort_session = ort.InferenceSession(
+            self._model_path,
+            providers=['CPUExecutionProvider'],
+        )
+        self._classes: np.ndarray = np.array(
+            [
+                'agriculture',
+                'clear',
+                'road',
+                'primary',
+                'blooming',
+                'blow_down',
+                'water',
+                'partly_cloudy',
+                'bare_ground',
+                'artisinal_mine',
+                'cloudy',
+                'habitation',
+                'selective_logging',
+                'cultivation',
+                'haze',
+                'conventional_mine',
+                'slash_burn',
+            ],
+        )
+        self._size: tp.Tuple[int, int] = (224, 224)
+        self._threshold: float = 0.5
 
     @property
     def classes(self) -> tp.List:
-        return ['a', 'b']
-        # return list(self._classes)
+        return list(self._classes)
 
     def predict(self, image: np.ndarray) -> tp.List[str]:
         """Предсказание списка жанров.
@@ -29,7 +49,7 @@ class PlanetClassifier:
         :param image: RGB изображение;
         :return: список жанров.
         """
-        return ['a']#self._postprocess_predict(self._predict(image))
+        return self._postprocess_predict(self._predict(image))
 
     def predict_proba(self, image: np.ndarray) -> tp.Dict[str, float]:
         """Предсказание вероятностей принадлежности к жанрам.
@@ -37,34 +57,34 @@ class PlanetClassifier:
         :param image: RGB изображение.
         :return: словарь вида `жанр фильма`: вероятность.
         """
-        return {'a': 0.6, 'b': 0.1}#self._postprocess_predict_proba(self._predict(image))
+        return self._postprocess_predict_proba(self._predict(image))
 
-    # def _predict(self, image: np.ndarray) -> np.ndarray:
-    #     """Предсказание вероятностей.
+    def _predict(self, image: np.ndarray) -> np.ndarray:
+        """Предсказание вероятностей.
 
-    #     :param image: RGB изображение;
-    #     :return: вероятности после прогона модели.
-    #     """
-    #     batch = preprocess_image(image, self._size).to(self._device)
+        :param image: RGB изображение;
+        :return: вероятности после прогона модели.
+        """
+        batch = preprocess_image(image, self._size)
 
-    #     with torch.no_grad():
-    #         model_predict = self._model(batch).detach().cpu()[0]
+        ort_inputs = {self._ort_session.get_inputs()[0].name: batch}
+        ort_outputs = self._ort_session.run(None, ort_inputs)[0][0]
 
-    #     return model_predict.numpy()
+        return 1 / (1 + np.exp(-ort_outputs))
 
-    # def _postprocess_predict(self, predict: np.ndarray) -> tp.List[str]:
-    #     """Постобработка для получения списка жанров.
+    def _postprocess_predict(self, predict: np.ndarray) -> tp.List[str]:
+        """Постобработка для получения списка жанров.
 
-    #     :param predict: вероятности после прогона модели;
-    #     :return: список жанров.
-    #     """
-    #     return self._classes[predict > self._thresholds].tolist()
+        :param predict: вероятности после прогона модели;
+        :return: список жанров.
+        """
+        return self._classes[predict > self._threshold].tolist()
 
-    # def _postprocess_predict_proba(self, predict: np.ndarray) -> tp.Dict[str, float]:
-    #     """Постобработка для получения словаря с вероятностями.
+    def _postprocess_predict_proba(self, predict: np.ndarray) -> tp.Dict[str, float]:
+        """Постобработка для получения словаря с вероятностями.
 
-    #     :param predict: вероятности после прогона модели;
-    #     :return: словарь вида `жанр фильма`: вероятность.
-    #     """
-    #     sorted_idxs = reversed(predict.argsort())
-    #     return {self._classes[i]: float(predict[i]) for i in sorted_idxs}
+        :param predict: вероятности после прогона модели;
+        :return: словарь вида `жанр фильма`: вероятность.
+        """
+        sorted_idxs = reversed(predict.argsort())
+        return {self._classes[i]: float(predict[i]) for i in sorted_idxs}
