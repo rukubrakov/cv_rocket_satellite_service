@@ -8,3 +8,4 @@ wemake-python-styleguide==0.18.0
 dvc[ssh]==3.19.0
 pytest==7.4.2
 httpx==0.25.0
+onnxruntime==1.15.1
