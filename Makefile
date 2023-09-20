@@ -12,7 +12,7 @@ run_app:
 
 .PHONY: install
 install:
-	pip install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
+	pip install -r requirements.txt
 
 .PHONY: download_weights
 download_weights:
